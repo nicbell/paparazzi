@@ -3,12 +3,30 @@ apply plugin: 'org.jetbrains.kotlin.android'
 apply plugin: 'app.cash.paparazzi'
 
 android {
-  compileSdkVersion 29
+  compileSdk 30
   defaultConfig {
     minSdkVersion 25
+  }
+  buildFeatures {
+    compose true
+  }
+  composeOptions {
+    kotlinCompilerExtensionVersion versions.compose
   }
 }
 
 dependencies {
+  implementation 'androidx.appcompat:appcompat:1.4.0'
+//  implementation 'androidx.compose.ui:ui-tooling:1.0.5'
+  implementation deps.androidx.constraintLayout
+  implementation deps.androidx.composeMaterial
+
   testImplementation deps.testparameterinjector
+}
+
+configurations.all {
+  resolutionStrategy {
+    force 'androidx.core:core:1.6.0'
+    force 'androidx.core:core-ktx:1.6.0'
+  }
 }
