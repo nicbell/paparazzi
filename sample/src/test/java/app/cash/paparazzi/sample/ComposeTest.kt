@@ -44,7 +44,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.ViewTreeLifecycleOwner
-import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.ViewTreeSavedStateRegistryOwner
@@ -74,14 +73,23 @@ class ComposeTest {
     }
     paparazzi.snapshot(parent)
   }
+
+  @Test
+  fun compose2() {
+    paparazzi.snapshot({
+      CircleSquare(modifier = Modifier
+          .fillMaxSize()
+          .padding(16.dp))
+    })
+  }
 }
 
 class PaparazziComposeOwner private constructor() : LifecycleOwner, SavedStateRegistryOwner {
   private val lifecycleRegistry: LifecycleRegistry = LifecycleRegistry(this)
   private val savedStateRegistryController = SavedStateRegistryController.create(this)
 
-  override fun getLifecycle(): Lifecycle = lifecycleRegistry
-  override fun getSavedStateRegistry(): SavedStateRegistry = savedStateRegistryController.savedStateRegistry
+  override fun getLifecycle() = lifecycleRegistry
+  override fun getSavedStateRegistry() = savedStateRegistryController.savedStateRegistry
 
   companion object {
     fun register(view: View) {
@@ -94,16 +102,15 @@ class PaparazziComposeOwner private constructor() : LifecycleOwner, SavedStateRe
   }
 }
 
-
 @Composable
 fun CircleSquare(modifier: Modifier = Modifier) {
   val animatedProgress = remember { Animatable(0f) }
   LaunchedEffect(animatedProgress) {
     animatedProgress.animateTo(
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 2500, easing = LinearEasing),
-        ),
+      targetValue = 1f,
+      animationSpec = infiniteRepeatable(
+        animation = tween(durationMillis = 2500, easing = LinearEasing),
+      ),
     )
   }
 
@@ -129,9 +136,9 @@ fun CircleSquare(modifier: Modifier = Modifier) {
         rotate(-rotation, Offset(0f, 0f)) {
           val rectSize = 2 * size.circleRadius()
           drawRect(
-              color = Color.White,
-              topLeft = Offset(-rectSize / 2f, -rectSize / 2f),
-              size = Size(rectSize, rectSize),
+            color = Color.White,
+            topLeft = Offset(-rectSize / 2f, -rectSize / 2f),
+            size = Size(rectSize, rectSize),
           )
         }
       }
@@ -152,12 +159,12 @@ private fun DrawScope.drawCircles(sweepAngle: Float, rotation: Float) {
     }, {
       val rectSize = 2 * (circleRadius - circleRadius / 16f)
       drawArc(
-          color = Color.Black,
-          startAngle = 90f * (i + 1),
-          sweepAngle = sweepAngle,
-          useCenter = true,
-          topLeft = Offset(-rectSize / 2f, -rectSize / 2f),
-          size = Size(rectSize, rectSize),
+        color = Color.Black,
+        startAngle = 90f * (i + 1),
+        sweepAngle = sweepAngle,
+        useCenter = true,
+        topLeft = Offset(-rectSize / 2f, -rectSize / 2f),
+        size = Size(rectSize, rectSize),
       )
     })
   }
@@ -196,24 +203,24 @@ fun HelloWorld() {
     Text(text)
     Text(text, style = TextStyle(fontFamily = FontFamily.Cursive))
     Text(
-        text = text,
-        style = TextStyle(textDecoration = TextDecoration.LineThrough)
+      text = text,
+      style = TextStyle(textDecoration = TextDecoration.LineThrough)
     )
     Text(
-        text = text,
-        style = TextStyle(textDecoration = TextDecoration.Underline)
+      text = text,
+      style = TextStyle(textDecoration = TextDecoration.Underline)
     )
     Text(
-        text = text,
-        style = TextStyle(
-            textDecoration = TextDecoration.combine(
-                listOf(
-                    TextDecoration.Underline,
-                    TextDecoration.LineThrough
-                )
-            ),
-            fontWeight = FontWeight.Bold
-        )
+      text = text,
+      style = TextStyle(
+        textDecoration = TextDecoration.combine(
+          listOf(
+            TextDecoration.Underline,
+            TextDecoration.LineThrough
+          )
+        ),
+        fontWeight = FontWeight.Bold
+      )
     )
   }
 }
@@ -228,13 +235,13 @@ fun MySurface() {
     val cornerSize = 16.dp
 
     Box(
-        Modifier
-            .graphicsLayer {
-              alpha = 0.5f
-              shadowElevation = 5f
-            }
-            .size(popupWidth, popupHeight)
-            .background(Color.White, RoundedCornerShape(cornerSize))
+      Modifier
+        .graphicsLayer {
+          alpha = 0.5f
+          shadowElevation = 5f
+        }
+        .size(popupWidth, popupHeight)
+        .background(Color.White, RoundedCornerShape(cornerSize))
     )
   }
 }
@@ -250,9 +257,9 @@ fun MyPopup() {
 
     Popup(alignment = Alignment.Center) {
       Box(
-          Modifier
-              .size(popupWidth, popupHeight)
-              .background(Color.White, RoundedCornerShape(cornerSize))
+        Modifier
+          .size(popupWidth, popupHeight)
+          .background(Color.White, RoundedCornerShape(cornerSize))
       )
     }
   }

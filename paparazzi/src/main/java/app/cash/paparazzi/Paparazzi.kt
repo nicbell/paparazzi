@@ -28,7 +28,10 @@ import android.view.Choreographer
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams
+import android.widget.FrameLayout
 import androidx.annotation.LayoutRes
+import androidx.lifecycle.LifecycleOwner
 import app.cash.paparazzi.agent.AgentTestRule
 import app.cash.paparazzi.agent.InterceptorRegistrar
 import app.cash.paparazzi.internal.EditModeInterceptor
@@ -164,6 +167,22 @@ class Paparazzi @JvmOverloads constructor(
   }
 
   fun <V : View> inflate(@LayoutRes layoutId: Int): V = layoutInflater.inflate(layoutId, null) as V
+
+  @JvmOverloads
+  fun snapshot(
+    composable: @Composable () -> Unit,
+    name: String? = null,
+    deviceConfig: DeviceConfig? = null,
+    theme: String? = null,
+    renderingMode: RenderingMode? = null
+  ) {
+    val hostView = ComposeView(context)
+    val parent = FrameLayout(context).apply { id = android.R.id.content }
+    parent.addView(hostView, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+    PaparazziComposeOwner.register(parent)
+    hostView.setContent(composable)
+    snapshot(parent, name, deviceConfig, theme, renderingMode)
+  }
 
   @JvmOverloads
   fun snapshot(
@@ -490,6 +509,24 @@ class Paparazzi @JvmOverloads constructor(
         "multiplyMV" to MatrixVectorMultiplicationInterceptor::class.java
       )
     )
+  }
+
+  class PaparazziComposeOwner private constructor() : LifecycleOwner, SavedStateRegistryOwner {
+    private val lifecycleRegistry: LifecycleRegistry = LifecycleRegistry(this)
+    private val savedStateRegistryController = SavedStateRegistryController.create(this)
+
+    override fun getLifecycle(): Lifecycle = lifecycleRegistry
+    override fun getSavedStateRegistry(): SavedStateRegistry = savedStateRegistryController.savedStateRegistry
+
+    companion object {
+      fun register(view: View) {
+        val owner = PaparazziComposeOwner()
+        owner.savedStateRegistryController.performRestore(null)
+        owner.lifecycleRegistry.currentState = Lifecycle.State.CREATED
+        ViewTreeLifecycleOwner.set(view, owner)
+        ViewTreeSavedStateRegistryOwner.set(view, owner)
+      }
+    }
   }
 
   companion object {
